@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     color: "#1e90ff",
     marginTop: 5,
-    marginRight: 55
+    marginRight: 45
   },
 
   button: {

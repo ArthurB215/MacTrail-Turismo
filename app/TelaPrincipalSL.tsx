@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput} from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 export default function Home() {
@@ -7,24 +14,28 @@ export default function Home() {
 
   const lugares = [
     {
-      imagem: require("../assets/images/japao.png"),
-      nome: "Monte Fuji",
-      pais: "Japão",
-      rating: 4.8,
-    },
-    {
+      id: 1,
       imagem: require("../assets/images/chile.png"),
       nome: "Cordilheira dos Andes",
       pais: "Chile",
       rating: 4.7,
     },
     {
+      id: 0,
+      imagem: require("../assets/images/japao.png"),
+      nome: "Monte Fuji",
+      pais: "Japão",
+      rating: 4.8,
+    },
+    {
+      id: 2,
       imagem: require("../assets/images/china.png"),
       nome: "Templo do Céu",
       pais: "China",
       rating: 4.6,
     },
     {
+      id: 3,
       imagem: require("../assets/images/franca.png"),
       nome: "Torre Eiffel",
       pais: "França",
@@ -33,15 +44,38 @@ export default function Home() {
   ];
 
   const [index, setIndex] = useState(0);
-  const [filtro, setFiltro] = useState("procurados");
+  const [filtro, setFiltro] = useState<"recentes" | "procurados" | "avaliados">("recentes");
   const [busca, setBusca] = useState("");
 
+  const lugaresFiltradosBusca = busca
+    ? lugares.filter((l) =>
+        l.nome.toLowerCase().includes(busca.toLowerCase())
+      )
+    : [];
+
+  const lugaresFiltrados =
+    filtro === "avaliados"
+      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 2)
+      : filtro === "procurados"
+      ? [
+          lugares.find((l) => l.id === 3),
+          lugares.find((l) => l.id === 1),
+        ].filter(Boolean)
+      : lugares;
+
+  const lugarAtual = lugaresFiltrados[index];
+
+  function mudarFiltro(novoFiltro: "recentes" | "procurados" | "avaliados") {
+    setFiltro(novoFiltro);
+    setIndex(0);
+  }
+
   function proximaImagem() {
-    setIndex((prev) => (prev + 1) % lugares.length);
+    setIndex((prev) => (prev + 1) % lugaresFiltrados.length);
   }
 
   function imagemAnterior() {
-    setIndex((prev) => (prev - 1 + lugares.length) % lugares.length);
+    setIndex((prev) => (prev - 1 + lugaresFiltrados.length) % lugaresFiltrados.length);
   }
 
   return (
@@ -54,9 +88,9 @@ export default function Home() {
 
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={() => router.push("/TelaLogin")}
+          onPress={() => router.push("/Cadastro")}
         >
-          <Text style={styles.loginText}>Login</Text>
+          <Text style={styles.loginText}>Cadastrar</Text>
         </TouchableOpacity>
       </View>
 
@@ -67,64 +101,62 @@ export default function Home() {
           onChangeText={setBusca}
           style={styles.input}
         />
+
+        {busca.length > 0 && (
+          <View style={styles.sugestoes}>
+            {lugaresFiltradosBusca.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => router.push("/Cadastro")}
+              >
+                <Text style={styles.sugestaoItem}>{item.nome}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Lugares Populares</Text>
-        <TouchableOpacity onPress={() => alert("Em breve você verá todos os lugares!")}>
-        <Text style={styles.verTudo}>Ver Tudo</Text>
+        <TouchableOpacity onPress={() => router.push("/Cadastro")}>
+          <Text style={styles.verTudo}>Ver Tudo</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.filters}>
         <TouchableOpacity
-          style={filtro === "procurados" ? styles.activeFilter : styles.filter}
-          onPress={() => setFiltro("procurados")}
+          style={filtro === "recentes" ? styles.activeFilter : styles.filter}
+          onPress={() => mudarFiltro("recentes")}
         >
-          <Text
-            style={
-              filtro === "procurados"
-                ? styles.activeFilterText
-                : styles.filterText
-            }
-          >
+          <Text style={filtro === "recentes" ? styles.activeFilterText : styles.filterText}>
+            Recentes
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={filtro === "procurados" ? styles.activeFilter : styles.filter}
+          onPress={() => mudarFiltro("procurados")}
+        >
+          <Text style={filtro === "procurados" ? styles.activeFilterText : styles.filterText}>
             Mais Procurados
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={filtro === "avaliados" ? styles.activeFilter : styles.filter}
-          onPress={() => setFiltro("avaliados")}
+          onPress={() => mudarFiltro("avaliados")}
         >
-          <Text
-            style={
-              filtro === "avaliados"
-                ? styles.activeFilterText
-                : styles.filterText
-            }
-          >
+          <Text style={filtro === "avaliados" ? styles.activeFilterText : styles.filterText}>
             Mais Avaliados
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={filtro === "recentes" ? styles.activeFilter : styles.filter}
-          onPress={() => setFiltro("recentes")}
-        >
-          <Text
-            style={
-              filtro === "recentes"
-                ? styles.activeFilterText
-                : styles.filterText
-            }
-          >
-            Recentes
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.cardContainer}>
-        <Image source={lugares[index].imagem} style={styles.image} />
+      <TouchableOpacity
+        style={styles.cardContainer}
+        onPress={() => router.push("/Cadastro")}
+      >
+        <Image source={lugarAtual?.imagem} style={styles.image} />
 
         <TouchableOpacity style={styles.leftBtn} onPress={imagemAnterior}>
           <Text style={styles.arrow}>{"<"}</Text>
@@ -135,16 +167,16 @@ export default function Home() {
         </TouchableOpacity>
 
         <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle}>{lugares[index].nome}</Text>
+          <Text style={styles.cardTitle}>{lugarAtual?.nome}</Text>
           <Text style={styles.cardSub}>
-            📍 {lugares[index].pais}   ⭐ {lugares[index].rating}
+            📍 {lugarAtual?.pais} ⭐ {lugarAtual?.rating}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          © 2026 Explore Mundo - Todos os direitos reservados
+          © 2026 MacTrail Turismo - Todos os direitos reservados
         </Text>
       </View>
     </View>
@@ -186,13 +218,32 @@ const styles = StyleSheet.create({
   },
 
   searchBox: {
-    marginTop: 20,
-  },
+  marginTop: 20,
+  position: "relative",
+  zIndex: 10,
+},
 
-  input: {
-    backgroundColor: "#fff",
+input: {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 10,
+  zIndex: 20,
+},
+
+sugestoes: {
+  position: "absolute",
+  top: 50,
+  width: "100%",
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  zIndex: 999,
+  elevation: 10,
+},
+
+  sugestaoItem: {
     padding: 12,
-    borderRadius: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
 
   sectionHeader: {
