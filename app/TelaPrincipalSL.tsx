@@ -8,59 +8,31 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { lugares, Lugar } from "../src/constants/data";
 
 export default function Home() {
   const router = useRouter();
-
-  const lugares = [
-    {
-      id: 1,
-      imagem: require("../assets/images/chile.png"),
-      nome: "Cordilheira dos Andes",
-      pais: "Chile",
-      rating: 4.7,
-    },
-    {
-      id: 0,
-      imagem: require("../assets/images/japao.png"),
-      nome: "Monte Fuji",
-      pais: "Japão",
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      imagem: require("../assets/images/china.png"),
-      nome: "Templo do Céu",
-      pais: "China",
-      rating: 4.6,
-    },
-    {
-      id: 3,
-      imagem: require("../assets/images/franca.png"),
-      nome: "Torre Eiffel",
-      pais: "França",
-      rating: 4.9,
-    },
-  ];
 
   const [index, setIndex] = useState(0);
   const [filtro, setFiltro] = useState<"recentes" | "procurados" | "avaliados">("recentes");
   const [busca, setBusca] = useState("");
 
   const lugaresFiltradosBusca = busca
-    ? lugares.filter((l) =>
+    ? lugares.filter((l: Lugar) =>
         l.nome.toLowerCase().includes(busca.toLowerCase())
       )
     : [];
 
   const lugaresFiltrados =
     filtro === "avaliados"
-      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 2)
+      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 4)
       : filtro === "procurados"
       ? [
-          lugares.find((l) => l.id === 3),
-          lugares.find((l) => l.id === 1),
-        ].filter(Boolean)
+          lugares.find((l: Lugar) => l.id === 3),
+          lugares.find((l: Lugar) => l.id === 5),
+          lugares.find((l: Lugar) => l.id === 0),
+          lugares.find((l: Lugar) => l.id === 7),
+        ].filter((item): item is Lugar => item !== undefined)
       : lugares;
 
   const lugarAtual = lugaresFiltrados[index];
@@ -80,99 +52,101 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Olá. Seja Bem-vindo</Text>
-          <Text style={styles.subtitle}>Explore o mundo.</Text>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Olá. Seja Bem-vindo</Text>
+            <Text style={styles.subtitle}>Explore o mundo.</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push("/Cadastro")}
+          >
+            <Text style={styles.loginText}>Cadastrar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.searchBox}>
+          <TextInput
+            placeholder="Lugares bonitos"
+            value={busca}
+            onChangeText={setBusca}
+            style={styles.input}
+          />
+
+          {busca.length > 0 && (
+            <View style={styles.sugestoes}>
+              {lugaresFiltradosBusca.map((item: Lugar) => (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => router.push("/Cadastro")}
+                >
+                  <Text style={styles.sugestaoItem}>{item.nome}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Lugares Populares</Text>
+          <TouchableOpacity onPress={() => router.push("/Cadastro")}>
+            <Text style={styles.verTudo}>Ver Tudo</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.filters}>
+          <TouchableOpacity
+            style={filtro === "recentes" ? styles.activeFilter : styles.filter}
+            onPress={() => mudarFiltro("recentes")}
+          >
+            <Text style={filtro === "recentes" ? styles.activeFilterText : styles.filterText}>
+              Recentes
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={filtro === "procurados" ? styles.activeFilter : styles.filter}
+            onPress={() => mudarFiltro("procurados")}
+          >
+            <Text style={filtro === "procurados" ? styles.activeFilterText : styles.filterText}>
+              Mais Procurados
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={filtro === "avaliados" ? styles.activeFilter : styles.filter}
+            onPress={() => mudarFiltro("avaliados")}
+          >
+            <Text style={filtro === "avaliados" ? styles.activeFilterText : styles.filterText}>
+              Mais Avaliados
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
-          style={styles.loginButton}
+          style={styles.cardContainer}
           onPress={() => router.push("/Cadastro")}
         >
-          <Text style={styles.loginText}>Cadastrar</Text>
-        </TouchableOpacity>
-      </View>
+          <Image source={lugarAtual?.imagem} style={styles.image} />
 
-      <View style={styles.searchBox}>
-        <TextInput
-          placeholder="Lugares bonitos"
-          value={busca}
-          onChangeText={setBusca}
-          style={styles.input}
-        />
+          <TouchableOpacity style={styles.leftBtn} onPress={imagemAnterior}>
+            <Text style={styles.arrow}>{"<"}</Text>
+          </TouchableOpacity>
 
-        {busca.length > 0 && (
-          <View style={styles.sugestoes}>
-            {lugaresFiltradosBusca.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => router.push("/Cadastro")}
-              >
-                <Text style={styles.sugestaoItem}>{item.nome}</Text>
-              </TouchableOpacity>
-            ))}
+          <TouchableOpacity style={styles.rightBtn} onPress={proximaImagem}>
+            <Text style={styles.arrow}>{">"}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardTitle}>{lugarAtual?.nome}</Text>
+            <Text style={styles.cardSub}>
+              📍 {lugarAtual?.pais} ⭐ {lugarAtual?.rating}
+            </Text>
           </View>
-        )}
-      </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Lugares Populares</Text>
-        <TouchableOpacity onPress={() => router.push("/Cadastro")}>
-          <Text style={styles.verTudo}>Ver Tudo</Text>
         </TouchableOpacity>
       </View>
-
-      <View style={styles.filters}>
-        <TouchableOpacity
-          style={filtro === "recentes" ? styles.activeFilter : styles.filter}
-          onPress={() => mudarFiltro("recentes")}
-        >
-          <Text style={filtro === "recentes" ? styles.activeFilterText : styles.filterText}>
-            Recentes
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={filtro === "procurados" ? styles.activeFilter : styles.filter}
-          onPress={() => mudarFiltro("procurados")}
-        >
-          <Text style={filtro === "procurados" ? styles.activeFilterText : styles.filterText}>
-            Mais Procurados
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={filtro === "avaliados" ? styles.activeFilter : styles.filter}
-          onPress={() => mudarFiltro("avaliados")}
-        >
-          <Text style={filtro === "avaliados" ? styles.activeFilterText : styles.filterText}>
-            Mais Avaliados
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        style={styles.cardContainer}
-        onPress={() => router.push("/Cadastro")}
-      >
-        <Image source={lugarAtual?.imagem} style={styles.image} />
-
-        <TouchableOpacity style={styles.leftBtn} onPress={imagemAnterior}>
-          <Text style={styles.arrow}>{"<"}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.rightBtn} onPress={proximaImagem}>
-          <Text style={styles.arrow}>{">"}</Text>
-        </TouchableOpacity>
-
-        <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle}>{lugarAtual?.nome}</Text>
-          <Text style={styles.cardSub}>
-            📍 {lugarAtual?.pais} ⭐ {lugarAtual?.rating}
-          </Text>
-        </View>
-      </TouchableOpacity>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
@@ -184,25 +158,30 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f5f5f5",
+
+  container: { 
+    flex: 1, 
+    backgroundColor: "#f5f5f5" 
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  content: { 
+    flex: 1, 
+    padding: 20 
   },
 
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+  header: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center" 
   },
 
-  subtitle: {
-    color: "#666",
+  title: { 
+    fontSize: 24, 
+    fontWeight: "bold" 
+  },
+
+  subtitle: { 
+    color: "#666" 
   },
 
   loginButton: {
@@ -212,33 +191,32 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
 
-  loginText: {
-    color: "#fff",
-    fontWeight: "bold",
+  loginText: { 
+    color: "#fff", 
+    fontWeight: "bold" 
   },
 
-  searchBox: {
-  marginTop: 20,
-  position: "relative",
-  zIndex: 10,
-},
+  searchBox: { 
+    marginTop: 20, 
+    position: "relative", 
+    zIndex: 10 
+  },
 
-input: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  zIndex: 20,
-},
+  input: {
+     backgroundColor: "#fff", 
+     padding: 12, 
+     borderRadius: 10 
+    },
 
-sugestoes: {
-  position: "absolute",
-  top: 50,
-  width: "100%",
-  backgroundColor: "#fff",
-  borderRadius: 10,
-  zIndex: 999,
-  elevation: 10,
-},
+  sugestoes: {
+    position: "absolute",
+    top: 50,
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    zIndex: 999,
+    elevation: 10,
+  },
 
   sugestaoItem: {
     padding: 12,
@@ -246,45 +224,45 @@ sugestoes: {
     borderBottomColor: "#eee",
   },
 
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
+  sectionHeader: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginTop: 20 
   },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+  sectionTitle: { 
+    fontSize: 18, 
+    fontWeight: "bold" 
   },
 
-  verTudo: {
-    color: "#888",
+  verTudo: { 
+    color: "#888" 
   },
 
-  filters: {
-    flexDirection: "row",
-    marginTop: 15,
-    gap: 10,
+  filters: { 
+    flexDirection: "row", 
+    marginTop: 15, 
+    gap: 10 
   },
 
-  activeFilter: {
-    backgroundColor: "#333",
-    padding: 10,
-    borderRadius: 20,
+  activeFilter: { 
+    backgroundColor: "#333", 
+    padding: 10, 
+    borderRadius: 20 
   },
 
-  activeFilterText: {
-    color: "#fff",
+  activeFilterText: { 
+    color: "#fff" 
   },
 
-  filter: {
-    backgroundColor: "#ddd",
-    padding: 10,
-    borderRadius: 20,
+  filter: { 
+    backgroundColor: "#ddd", 
+    padding: 10, 
+    borderRadius: 20 
   },
 
-  filterText: {
-    color: "#000",
+  filterText: { 
+    color: "#000" 
   },
 
   cardContainer: {
@@ -294,9 +272,9 @@ sugestoes: {
     height: 600,
   },
 
-  image: {
-    width: "100%",
-    height: 600,
+  image: { 
+    width: "100%", 
+    height: "100%" 
   },
 
   leftBtn: {
@@ -317,9 +295,8 @@ sugestoes: {
     borderRadius: 20,
   },
 
-  arrow: {
-    color: "#fff",
-    fontSize: 18,
+  arrow: { 
+    color: "#fff", fontSize: 18 
   },
 
   cardInfo: {
@@ -329,29 +306,25 @@ sugestoes: {
     padding: 15,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
-
-  cardTitle: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+  cardTitle: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 16 
   },
 
-  cardSub: {
-    color: "#eee",
+  cardSub: { 
+    color: "#eee" 
   },
 
   footer: {
-    marginTop: 50,
-    marginLeft: -20,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#cccccc",
     height: 60,
-    width: 520,
   },
 
-  footerText: {
-    color: "#000000",
-    fontSize: 12,
+  footerText: { 
+    color: "#000000", 
+    fontSize: 12 
   },
 });

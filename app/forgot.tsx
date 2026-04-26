@@ -1,20 +1,34 @@
 import React, { useState } from "react";
-import {View, Text, StyleSheet, ImageBackground, TextInput, TouchableOpacity, Image} from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { useRouter } from "expo-router";
 
-export default function Home() {
+export default function Forgot() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
 
-  function handleLogin() {
-    if (!email || !senha) {
+  function handleReset() {
+    if (!senha || !confirmarSenha) {
       alert("Preencha todos os campos!");
       return;
     }
 
-    router.push("/TelaPrincipal"); 
+    if (senha !== confirmarSenha) {
+      alert("As senhas não coincidem!");
+      return;
+    }
+
+    alert("Senha redefinida com sucesso!");
+
+    router.push("/TelaLogin");
   }
 
   return (
@@ -24,53 +38,31 @@ export default function Home() {
       resizeMode="cover"
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Faça login na sua conta.</Text>
-        <Text style={styles.title}>conta.</Text>
+        <Text style={styles.title}>Redefinir senha</Text>
         <Text style={styles.subtitle}>
-          Insira seu e-mail e senha para fazer login.
+          Digite sua nova senha abaixo.
         </Text>
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>Nova senha</Text>
         <TextInput
           style={styles.input}
-          placeholder="Digite seu email"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
+          placeholder="Digite a nova senha"
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
         />
 
-        <TouchableOpacity>
-          <Text style={styles.forgot}>Esqueceu sua senha?</Text>
-        </TouchableOpacity>
+        <Text style={styles.label}>Confirmar senha</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Confirme a senha"
+          secureTextEntry
+          value={confirmarSenha}
+          onChangeText={setConfirmarSenha}
+        />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Conectar</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.or}>_________________________ Ou _________________________</Text>
-
-        <TouchableOpacity style={styles.socialButton}>
-          <Image
-            source={require("../assets/images/googlelogo.png")}
-            style={styles.icon}
-          />
-          <Text>Continuar com o Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton}>
-          <Image
-            source={require("../assets/images/facebooklogo.png")}
-            style={styles.icon}
-          />
-          <Text>Continuar com o Facebook</Text>
+        <TouchableOpacity style={styles.button} onPress={handleReset}>
+          <Text style={styles.buttonText}>Redefinir senha</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -85,10 +77,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
     marginTop: 50,
-    padding: 30
+    padding: 30,
   },
 
   title: {
@@ -104,8 +94,8 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 10,
     marginBottom: 5,
-    color: "#ffffff",
-    marginLeft: 50
+    color: "#000000",
+    marginLeft: 50,
   },
 
   input: {
@@ -113,53 +103,23 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     width: 350,
-    marginLeft: 50
-  },
-
-  forgot: {
-    textAlign: "right",
-    color: "#1e90ff",
-    marginTop: 5,
-    marginRight: 45
+    marginLeft: 50,
+    marginBottom: 15
   },
 
   button: {
     backgroundColor: "#1e90ff",
-    padding: 10,
+    padding: 12,
     borderRadius: 25,
     alignItems: "center",
     marginTop: 20,
-    width: 200,
-    marginLeft: 125
+    width: 350,
+    marginLeft: 50,
   },
 
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
-  },
-
-  or: {
-    textAlign: "center",
-    marginVertical: 15,
-    color: "#888",
-  },
-
-  socialButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#eee",
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 10,
-    gap: 10,
-    width: 350,
-    marginLeft: 50
-  },
-
-  icon: {
-    width: 20,
-    height: 20,
   },
 });

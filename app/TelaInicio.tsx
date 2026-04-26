@@ -23,12 +23,21 @@ export default function Home() {
           <Text style={styles.subtitle}>Turismo</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/TelaPrincipalSL")}
-        >
-          <Text style={styles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push("/TelaLogin")}
+          >
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.guestButton}
+            onPress={() => router.push("/TelaPrincipalSL")}
+          >
+            <Text style={styles.buttonText}>Entrar como convidado</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ImageBackground>
   );
@@ -66,14 +75,26 @@ const styles = StyleSheet.create({
     fontFamily: "PlayfairDisplay_400Regular_Italic",
   },
 
-  button: {
-    backgroundColor: "rgba(27, 121, 216, 0.8)",
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  loginButton: {
+    backgroundColor: "rgba(27, 121, 216, 0.9)",
     width: "80%",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",
-    marginBottom: 10,
+  },
 
+  guestButton: {
+    backgroundColor: "rgba(0,0,0,0.8)",
+    width: "80%",
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: "center",
   },
 
   buttonText: {
