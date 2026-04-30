@@ -221,6 +221,15 @@ export default function Cadastro() {
         <TouchableOpacity style={styles.button} onPress={handleCadastro}>
           <Text style={styles.buttonText}>Cadastrar-se</Text>
         </TouchableOpacity>
+
+        <Text style={styles.or}>────────────── OU ──────────────</Text>
+
+        <View style={styles.loginRow}>
+          <Text style={styles.loginText}>Já possui uma conta?</Text>
+          <TouchableOpacity onPress={() => router.push("/TelaLogin")}>
+            <Text style={styles.loginLink}> Faça Login</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ImageBackground>
   );
@@ -291,5 +300,26 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  or: {
+    textAlign: "center",
+    marginVertical: 15,
+    color: "#888",
+  },
+
+  loginRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+
+  loginText: {
+    color: "#000",
+  },
+
+  loginLink: {
+    color: "#1e90ff",
+    fontWeight: "bold",
   },
 });
