@@ -6,7 +6,6 @@ import {
   ImageBackground,
   TextInput,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import ForgotModal from "../src/components/ModalEmail";
@@ -73,23 +72,16 @@ export default function Home() {
             <Text style={styles.buttonText}>Conectar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() => router.push("/Cadastro")}
-          >
-            <Text style={styles.createButtonText}>Criar Conta</Text>
-          </TouchableOpacity>
         </View>
 
         <Text style={styles.or}>────────────── OU ──────────────</Text>
 
-        <TouchableOpacity style={styles.socialButton}>
-          <Image
-            source={require("../assets/images/googlelogo.png")}
-            style={styles.icon}
-          />
-          <Text>Continuar com o Google</Text>
-        </TouchableOpacity>
+        <View style={styles.signupRow}>
+          <Text style={styles.signupText}>Não possui conta?</Text>
+          <TouchableOpacity onPress={() => router.push("/Cadastro")}>
+            <Text style={styles.signupLink}> Cadastrar-se</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ForgotModal
@@ -104,6 +96,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
+
   container: {
     flex: 1,
     justifyContent: "center",
@@ -112,20 +105,24 @@ const styles = StyleSheet.create({
     marginTop: 50,
     padding: 30,
   },
+
   title: {
     fontSize: 30,
     fontWeight: "bold",
   },
+
   subtitle: {
     color: "#000000",
     marginBottom: 20,
   },
+
   label: {
     marginTop: 10,
     marginBottom: 5,
     color: "#000000",
     marginLeft: 50,
   },
+
   input: {
     backgroundColor: "#eee",
     padding: 12,
@@ -133,61 +130,53 @@ const styles = StyleSheet.create({
     width: 350,
     marginLeft: 50,
   },
+
   forgot: {
     textAlign: "right",
     color: "#1e90ff",
     marginTop: 5,
     marginRight: 45,
   },
+
   buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
     marginTop: 20,
   },
+
   button: {
     backgroundColor: "#1e90ff",
     padding: 10,
     borderRadius: 25,
     alignItems: "center",
-    width: 150,
+    width: 350,
   },
-  createButton: {
-    backgroundColor: "#333",
-    padding: 10,
-    borderRadius: 25,
-    alignItems: "center",
-    width: 150,
-  },
+
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  createButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+
   or: {
     textAlign: "center",
     marginVertical: 15,
     color: "#888",
   },
-  socialButton: {
+
+  signupRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#eee",
-    padding: 12,
-    borderRadius: 10,
     marginTop: 10,
-    gap: 10,
-    width: 350,
-    marginLeft: 50,
   },
-  icon: {
-    width: 20,
-    height: 20,
+
+  signupText: {
+    color: "#000",
+  },
+  
+  signupLink: {
+    color: "#1e90ff",
+    fontWeight: "bold",
   },
 });
