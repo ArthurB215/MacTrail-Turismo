@@ -1,40 +1,95 @@
-import React from "react";
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Image} from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 export default function LugarModal({ visible, onClose, lugares }: any) {
   const router = useRouter();
+  const [modoLista, setModoLista] = useState(true);
 
   return (
-    <Modal visible={visible} animationType="fade" transparent={true}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Lugares Disponíveis</Text>
+    <Modal visible={visible} animationType="fade" transparent>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Lugares Disponíveis</Text>
 
-          <View style={styles.grid}>
-            {lugares.map((item: any) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.gridItem}
-                onPress={() => {
-                  onClose();
-                  router.push({
-                    pathname: "/LugarInfo",
-                    params: { id: item.id },
-                  });
-                }}
-              >
-                <Image source={item.imagem} style={styles.gridImage} />
-                <Text style={styles.gridText}>{item.nome}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+              <FlatList
+                data={lugares}
+                key={modoLista ? "lista" : "grid"}
+                keyExtractor={(item: any) => item.id.toString()}
+                showsVerticalScrollIndicator={false}
+                numColumns={modoLista ? 1 : 2}
+                columnWrapperStyle={
+                  !modoLista ? { justifyContent: "space-between" } : undefined
+                }
+                contentContainerStyle={{ paddingBottom: 10 }}
+                renderItem={({ item }: any) =>
+                  modoLista ? (
+                    <TouchableOpacity
+                      style={styles.item}
+                      onPress={() => {
+                        onClose();
+                        router.push({
+                          pathname: "/LugarInfo",
+                          params: { id: item.id },
+                        });
+                      }}
+                    >
+                      <Image source={item.imagem} style={styles.image} />
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>Fechar</Text>
-          </TouchableOpacity>
+                      <View style={styles.info}>
+                        <Text style={styles.nome}>{item.nome}</Text>
+                        <Text style={styles.sub}>
+                          {item.pais} ⭐ {item.rating}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.gridItem}
+                      onPress={() => {
+                        onClose();
+                        router.push({
+                          pathname: "/LugarInfo",
+                          params: { id: item.id },
+                        });
+                      }}
+                    >
+                      <Image source={item.imagem} style={styles.gridImage} />
+                      <Text style={styles.gridText}>{item.nome}</Text>
+                    </TouchableOpacity>
+                  )
+                }
+              />
+
+              <View style={styles.footerButtons}>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => setModoLista(!modoLista)}
+                >
+                  <Text style={styles.icon}>
+                    {modoLista ? "▦" : "☰"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                  <Text style={styles.closeText}>Fechar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
@@ -50,6 +105,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: "#fff",
     width: "90%",
+    height: "68%",
     borderRadius: 20,
     padding: 20,
   },
@@ -57,14 +113,37 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: "center",
   },
 
-  grid: {
+  item: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    backgroundColor: "#eee",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+
+  image: {
+    width: 100,
+    height: 100,
+  },
+
+  info: {
+    padding: 10,
+    flex: 1,
+  },
+
+  nome: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  sub: {
+    color: "#666",
+    marginTop: 5,
   },
 
   gridItem: {
@@ -79,17 +158,38 @@ const styles = StyleSheet.create({
   },
 
   gridText: {
-    fontSize: 12,
-    marginTop: 5,
     textAlign: "center",
+    marginTop: 5,
+  },
+
+  footerButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  iconButton: {
+    backgroundColor: "#1e90ff",
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  icon: {
+    color: "#fff",
+    fontSize: 16,
   },
 
   closeButton: {
-    marginTop: 10,
     backgroundColor: "#000",
     padding: 10,
     borderRadius: 20,
     alignItems: "center",
+    flex: 1,
+    marginLeft: 10,
   },
 
   closeText: {

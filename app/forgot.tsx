@@ -27,7 +27,6 @@ export default function Forgot() {
     }
 
     alert("Senha redefinida com sucesso!");
-
     router.push("/TelaLogin");
   }
 
@@ -50,6 +49,7 @@ export default function Forgot() {
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
+          returnKeyType="next"
         />
 
         <Text style={styles.label}>Confirmar senha</Text>
@@ -59,6 +59,8 @@ export default function Forgot() {
           secureTextEntry
           value={confirmarSenha}
           onChangeText={setConfirmarSenha}
+          returnKeyType="done"
+          onSubmitEditing={handleReset}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleReset}>
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 350,
     marginLeft: 50,
-    marginBottom: 15
+    marginBottom: 15,
   },
 
   button: {

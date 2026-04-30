@@ -37,8 +37,16 @@ export default function ModalPerfil({ visible, onClose }: any) {
   return (
     <>
       <Modal visible={visible} animationType="fade" transparent>
-        <View style={styles.overlay}>
-          <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={onClose}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.card}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.header} />
 
             <Image
@@ -107,8 +115,8 @@ export default function ModalPerfil({ visible, onClose }: any) {
                 <Text style={styles.logoutText}>Deslogar</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       <ModalSair
@@ -158,6 +166,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 5,
     borderRadius: 20,
+    width: 30,
+    alignItems: "center"
   },
 
   content: {

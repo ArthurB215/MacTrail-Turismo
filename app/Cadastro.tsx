@@ -72,10 +72,13 @@ export default function Cadastro() {
     let num = text.replace(/\D/g, "");
     if (num.length > 4) num = num.slice(0, 4);
 
-    const anoAtual = new Date().getFullYear();
-    let a = parseInt(num);
+    if (num.length === 4) {
+      const anoAtual = new Date().getFullYear();
+      let a = parseInt(num);
 
-    if (!isNaN(a) && a > anoAtual) num = String(anoAtual);
+      if (a > anoAtual) num = String(anoAtual);
+      if (a < 1900) num = "1900";
+    }
 
     setAno(num);
   }
@@ -155,6 +158,7 @@ export default function Cadastro() {
           placeholder="Digite seu nome"
           value={nome}
           onChangeText={setNome}
+          onSubmitEditing={handleCadastro}
         />
 
         <Text style={styles.label}>Email</Text>
@@ -163,6 +167,7 @@ export default function Cadastro() {
           placeholder="Digite seu email"
           value={email}
           onChangeText={setEmail}
+          onSubmitEditing={handleCadastro}
         />
 
         <Text style={styles.label}>CPF</Text>
@@ -172,6 +177,7 @@ export default function Cadastro() {
           value={cpf}
           onChangeText={(text) => setCpf(formatarCPF(text))}
           keyboardType="numeric"
+          onSubmitEditing={handleCadastro}
         />
 
         <Text style={styles.label}>Data de nascimento</Text>
@@ -182,6 +188,7 @@ export default function Cadastro() {
             value={dia}
             onChangeText={validarDia}
             keyboardType="numeric"
+            onSubmitEditing={handleCadastro}
           />
           <TextInput
             style={styles.dataInput}
@@ -189,6 +196,7 @@ export default function Cadastro() {
             value={mes}
             onChangeText={validarMes}
             keyboardType="numeric"
+            onSubmitEditing={handleCadastro}
           />
           <TextInput
             style={styles.dataInput}
@@ -196,6 +204,7 @@ export default function Cadastro() {
             value={ano}
             onChangeText={validarAno}
             keyboardType="numeric"
+            onSubmitEditing={handleCadastro}
           />
         </View>
 
@@ -206,6 +215,7 @@ export default function Cadastro() {
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
+          onSubmitEditing={handleCadastro}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleCadastro}>
@@ -263,7 +273,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     padding: 12,
     borderRadius: 10,
-    width: 100,
+    width: 110,
     textAlign: "center",
   },
 

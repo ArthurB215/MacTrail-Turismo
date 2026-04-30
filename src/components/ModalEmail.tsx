@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -20,14 +20,33 @@ export default function ForgotModal({ visible, onClose }: any) {
     }
 
     alert("Email de redefinição enviado!");
-
+    setEmail("");
     onClose();
   }
 
+  function handleClose() {
+    setEmail("");
+    onClose();
+  }
+
+  useEffect(() => {
+    if (!visible) {
+      setEmail("");
+    }
+  }, [visible]);
+
   return (
-    <Modal visible={visible} animationType="fade" transparent={true}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+    <Modal visible={visible} animationType="fade" transparent>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={handleClose}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.modalContainer}
+          onPress={(e) => e.stopPropagation()}
+        >
           <Text style={styles.modalTitle}>Redefinir senha</Text>
 
           <Text style={styles.label}>Email</Text>
@@ -36,17 +55,19 @@ export default function ForgotModal({ visible, onClose }: any) {
             placeholder="Digite seu email"
             value={email}
             onChangeText={setEmail}
+            returnKeyType="done"
+            onSubmitEditing={handleEnviar}
           />
 
           <TouchableOpacity style={styles.sendButton} onPress={handleEnviar}>
             <Text style={styles.sendText}>Enviar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Text style={styles.closeText}>Cancelar</Text>
           </TouchableOpacity>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 }

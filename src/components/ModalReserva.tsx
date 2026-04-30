@@ -67,7 +67,6 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
 
   function formatarHora(text: string) {
     let num = text.replace(/\D/g, "");
-
     if (num.length > 4) num = num.slice(0, 4);
 
     if (num.length >= 3) {
@@ -131,7 +130,7 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
     }
 
     if (!horaValida(horaSaida) || !horaValida(horaChegada)) {
-      alert("Horário inválido! Use HH:MM entre 00:00 e 23:59.");
+      alert("Horário inválido!");
       return;
     }
 
@@ -153,7 +152,7 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
 
     if (!mesmoDia) {
       if (m2 < m1 || (m2 === m1 && d2 < d1)) {
-        alert("Data de chegada não pode ser anterior à data de saída!");
+        alert("Data de chegada não pode ser anterior!");
         return;
       }
     }
@@ -161,17 +160,11 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
     const saida = horaParaMinutos(horaSaida);
     const chegada = horaParaMinutos(horaChegada);
 
-    const mesmaData =
-      mesmoDia || (d1 === d2 && m1 === m2);
+    const mesmaData = mesmoDia || (d1 === d2 && m1 === m2);
 
     if (mesmaData) {
-      if (chegada === saida) {
-        alert("Horário de chegada não pode ser igual ao de saída no mesmo dia!");
-        return;
-      }
-
-      if (chegada < saida) {
-        alert("Horário de chegada não pode ser menor que o de saída no mesmo dia!");
+      if (chegada <= saida) {
+        alert("Horário de chegada inválido!");
         return;
       }
     }
@@ -197,8 +190,8 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
   return (
     <>
       <Modal visible={visible} animationType="fade" transparent>
-        <View style={styles.overlay}>
-          <View style={styles.container}>
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+          <TouchableOpacity activeOpacity={1} style={styles.container}>
             <Text style={styles.title}>Reservar viagem</Text>
             <Text style={styles.subtitle}>{lugar?.nome}</Text>
 
@@ -242,9 +235,7 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
                 placeholder="DD"
                 value={mesmoDia ? dia : diaChegada}
                 editable={!mesmoDia}
-                onChangeText={(t) =>
-                  validarDia(t, setDiaChegada, mesChegada)
-                }
+                onChangeText={(t) => validarDia(t, setDiaChegada, mesChegada)}
                 keyboardType="numeric"
               />
               <TextInput
@@ -291,8 +282,8 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       <ModalConfirm visible={modalConfirm} onClose={fecharTudo} />

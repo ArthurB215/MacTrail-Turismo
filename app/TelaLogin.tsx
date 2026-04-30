@@ -50,6 +50,7 @@ export default function Home() {
           placeholder="Digite seu email"
           value={email}
           onChangeText={setEmail}
+          returnKeyType="next"
         />
 
         <Text style={styles.label}>Senha</Text>
@@ -59,6 +60,8 @@ export default function Home() {
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
+          returnKeyType="done"
+          onSubmitEditing={handleLogin}
         />
 
         <TouchableOpacity onPress={() => setModalVisible(true)}>
