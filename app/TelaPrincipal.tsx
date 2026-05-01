@@ -22,9 +22,15 @@ export default function Home() {
   const [filtro, setFiltro] = useState<"recentes" | "procurados" | "avaliados">("recentes");
   const [busca, setBusca] = useState("");
 
+  const lugaresFiltradosBusca = busca
+    ? lugares.filter((l: Lugar) =>
+        l.nome.toLowerCase().includes(busca.toLowerCase())
+      )
+    : [];
+
   const lugaresFiltrados =
     filtro === "avaliados"
-      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 2)
+      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 4)
       : filtro === "procurados"
       ? [
           lugares.find((l: Lugar) => l.id === 3),
@@ -49,10 +55,6 @@ export default function Home() {
     setIndex((prev) => (prev - 1 + lugaresFiltrados.length) % lugaresFiltrados.length);
   }
 
-  const sugestoes = lugares.filter((l: Lugar) =>
-    l.nome.toLowerCase().includes(busca.toLowerCase())
-  );
-
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -70,22 +72,19 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ position: "relative", zIndex: 10 }}>
-          <View style={styles.searchBox}>
-            <TextInput
-              placeholder="Lugares bonitos"
-              value={busca}
-              onChangeText={setBusca}
-              style={styles.input}
-            />
-          </View>
+        <View style={styles.searchBox}>
+          <TextInput
+            placeholder="Lugares bonitos"
+            value={busca}
+            onChangeText={setBusca}
+            style={styles.input}
+          />
 
           {busca.length > 0 && (
             <View style={styles.sugestoes}>
-              {sugestoes.map((item: Lugar) => (
+              {lugaresFiltradosBusca.map((item: Lugar) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={styles.sugestaoItem}
                   onPress={() => {
                     setBusca(item.nome);
                     router.push({
@@ -94,7 +93,7 @@ export default function Home() {
                     });
                   }}
                 >
-                  <Text>{item.nome}</Text>
+                  <Text style={styles.sugestaoItem}>{item.nome}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
      width: 45, 
      height: 45, 
      borderRadius: 50 
-    },
+  },
 
   searchBox: { 
     marginTop: 20, 
@@ -232,18 +231,19 @@ const styles = StyleSheet.create({
 
   sugestoes: {
     position: "absolute",
-    top: 70,
+    top: 50,
     width: "100%",
     backgroundColor: "#fff",
     borderRadius: 10,
     zIndex: 999,
     elevation: 10,
   },
+
   sugestaoItem: { 
     padding: 12, 
     borderBottomWidth: 1, 
     borderBottomColor: "#eee"
-   },
+  },
 
   sectionHeader: { 
     flexDirection: "row", 
@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
   },
+
   rightBtn: {
     position: "absolute",
     right: 10,
@@ -314,7 +315,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
   },
-  arrow: { color: "#fff", fontSize: 18 },
+
+  arrow: { 
+    color: "#fff", 
+    fontSize: 18 
+  },
+
   cardInfo: {
     position: "absolute",
     bottom: 0,
@@ -322,6 +328,7 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
+
   cardTitle: { 
     color: "#fff", 
     fontWeight: "bold", 
