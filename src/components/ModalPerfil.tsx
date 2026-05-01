@@ -6,6 +6,7 @@ import {
   Modal,
   TouchableOpacity,
   Image,
+  Platform
 } from "react-native";
 import { usuario } from "../constants/user";
 import { useRouter } from "expo-router";
@@ -29,10 +30,17 @@ export default function ModalPerfil({ visible, onClose }: any) {
   }
 
   function confirmarLogout() {
-    setModalSair(false);
-    onClose();
-    router.replace("/TelaLogin");
-  }
+  setModalSair(false);
+  onClose();
+
+  setTimeout(() => {
+    if (Platform.OS === "web") {
+      window.location.href = "/TelaLogin";
+    } else {
+      router.replace("/TelaLogin");
+    }
+  }, 0);
+}
 
   return (
     <>
