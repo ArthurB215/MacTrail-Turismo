@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,56 @@ import {
   Modal,
   TouchableOpacity,
   Image,
-  Platform
+  Platform,
 } from "react-native";
-import { usuario } from "../constants/user";
 import { useRouter } from "expo-router";
 import ModalSair from "./ModalSair";
+import { getUsuarioLogado, logoutUsuario } from "../api/usuarioLogado";
+import { buscarUsuarioPorEmail, Usuario } from "../api/usuarios";
+import { getReservasPorUsuario } from "../database/database";
+import ModalApagar from "./ModalApagar";
 
 export default function ModalPerfil({ visible, onClose }: any) {
   const [mostrarCpf, setMostrarCpf] = useState(false);
   const [modalSair, setModalSair] = useState(false);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [reservas, setReservas] = useState<any[]>([]);
+  const [modalApagar, setModalApagar] = useState(false);
+  const [reservaSelecionada, setReservaSelecionada] = useState<any>(null);
+
   const router = useRouter();
+
+  useEffect(() => {
+    if (visible) {
+      carregarUsuario();
+    }
+  }, [visible]);
+
+  async function carregarUsuario() {
+    try {
+      const email = getUsuarioLogado();
+      if (!email) return;
+
+      const dados = await buscarUsuarioPorEmail(email);
+
+      if (dados) {
+        setUsuario(dados);
+      }
+
+      const lista = await getReservasPorUsuario(email);
+      setReservas(lista);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function recarregarReservas() {
+    const email = getUsuarioLogado();
+    if (!email) return;
+
+    const lista = await getReservasPorUsuario(email);
+    setReservas(lista);
+  }
 
   function formatarCpf(valor: string) {
     const nums = valor.replace(/\D/g, "");
@@ -30,17 +70,20 @@ export default function ModalPerfil({ visible, onClose }: any) {
   }
 
   function confirmarLogout() {
-  setModalSair(false);
-  onClose();
+    logoutUsuario();
+    setModalSair(false);
+    onClose();
 
-  setTimeout(() => {
-    if (Platform.OS === "web") {
-      window.location.href = "/TelaLogin";
-    } else {
-      router.replace("/TelaLogin");
-    }
-  }, 0);
-}
+    setTimeout(() => {
+      if (Platform.OS === "web") {
+        window.location.href = "/TelaLogin";
+      } else {
+        router.replace("/TelaLogin");
+      }
+    }, 0);
+  }
+
+  if (!usuario) return null;
 
   return (
     <>
@@ -80,9 +123,7 @@ export default function ModalPerfil({ visible, onClose }: any) {
                       ? formatarCpf(usuario.cpf)
                       : mascararCpf(usuario.cpf)}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => setMostrarCpf(!mostrarCpf)}
-                  >
+                  <TouchableOpacity onPress={() => setMostrarCpf(!mostrarCpf)}>
                     <Text style={styles.toggle}>
                       {mostrarCpf ? "Ocultar" : "Mostrar"}
                     </Text>
@@ -90,9 +131,7 @@ export default function ModalPerfil({ visible, onClose }: any) {
                 </View>
 
                 <Text style={styles.label}>Data de nascimento</Text>
-                <Text style={styles.value}>
-                  {usuario.dataNascimento}
-                </Text>
+                <Text style={styles.value}>{usuario.dataNascimento}</Text>
               </View>
 
               <View style={styles.section}>
@@ -110,10 +149,32 @@ export default function ModalPerfil({ visible, onClose }: any) {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Locais Favoritos</Text>
-                <Text style={styles.empty}>
-                  Esse usuário ainda não tem nenhum local favorito
-                </Text>
+                <Text style={styles.sectionTitle}>Minhas Viagens</Text>
+
+                {reservas.length === 0 ? (
+                  <Text style={styles.empty}>
+                    Esse usuário ainda não possui viagens
+                  </Text>
+                ) : (
+                  reservas.map((r, index) => (
+                    <View key={index} style={styles.viagemCard}>
+                      <TouchableOpacity
+                        style={styles.deleteX}
+                        onPress={() => {
+                          setReservaSelecionada(r);
+                          setModalApagar(true);
+                        }}
+                      >
+                        <Text style={styles.deleteXText}>✕</Text>
+                      </TouchableOpacity>
+
+                      <Text style={styles.viagemLugar}>{r.lugar}</Text>
+                      <Text style={styles.viagemData}>
+                        {r.diaSaida}/{r.mesSaida} às {r.horaSaida}
+                      </Text>
+                    </View>
+                  ))
+                )}
               </View>
 
               <TouchableOpacity
@@ -131,6 +192,13 @@ export default function ModalPerfil({ visible, onClose }: any) {
         visible={modalSair}
         onCancel={() => setModalSair(false)}
         onConfirm={confirmarLogout}
+      />
+
+      <ModalApagar
+        visible={modalApagar}
+        reserva={reservaSelecionada}
+        onCancel={() => setModalApagar(false)}
+        onDeleted={recarregarReservas}
       />
     </>
   );
@@ -175,7 +243,7 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 20,
     width: 30,
-    alignItems: "center"
+    alignItems: "center",
   },
 
   content: {
@@ -235,6 +303,23 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
+  viagemCard: {
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+
+  viagemLugar: {
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+
+  viagemData: {
+    color: "#555",
+    marginTop: 2,
+  },
+
   logout: {
     marginTop: 20,
     alignSelf: "center",
@@ -247,4 +332,23 @@ const styles = StyleSheet.create({
   logoutText: {
     color: "#fff",
   },
+
+  deleteX: {
+  position: "absolute",
+  right: 8,
+  top: 8,
+  backgroundColor: "#ff0000",
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 10,
+},
+
+deleteXText: {
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "bold",
+},
 });

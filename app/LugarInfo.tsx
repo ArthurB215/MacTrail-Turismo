@@ -1,16 +1,40 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ModalReserva from "../src/components/ModalReserva";
-import { lugares, Lugar } from "../src/constants/data";
+import { getLugarById, Lugar } from "../src/api/lugares";
+import { imagens } from "../src/constants/imagens";
 
 export default function LugarInfo() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const [modalVisible, setModalVisible] = useState(false);
 
-  const idNumber = Number(id);
-  const lugar: Lugar | undefined = lugares.find((l: Lugar) => l.id === idNumber);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [lugar, setLugar] = useState<Lugar | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    carregarLugar();
+  }, []);
+
+  async function carregarLugar() {
+    try {
+      const dados = await getLugarById(String(id));
+      setLugar(dados);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <Text>Carregando lugar...</Text>
+      </View>
+    );
+  }
 
   if (!lugar) {
     return (
@@ -22,25 +46,46 @@ export default function LugarInfo() {
 
   return (
     <View style={styles.container}>
-      <Image source={lugar.imagem} style={styles.image} />
+      <Image
+        source={
+          imagens[
+            lugar.nome as keyof typeof imagens
+          ]
+        }
+        style={styles.image}
+      />
 
       <View style={styles.info}>
         <Text style={styles.title}>
           {lugar.nome}, {lugar.pais}
         </Text>
 
-        <Text style={styles.location}>{lugar.localizacao}</Text>
+        <Text style={styles.location}>
+          {lugar.localizacao}
+        </Text>
 
-        <Text style={styles.rating}>⭐ {lugar.rating}</Text>
+        <Text style={styles.rating}>
+          ⭐ {lugar.rating}
+        </Text>
 
-        <Text style={styles.desc}>{lugar.descricao}</Text>
+        <Text style={styles.desc}>
+          {lugar.descricao}
+        </Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-          <Text style={styles.buttonText}>Reserve agora</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.buttonText}>
+            Reserve agora
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.back} onPress={() => router.back()}>
+      <TouchableOpacity
+        style={styles.back}
+        onPress={() => router.back()}
+      >
         <Text>{"<"}</Text>
       </TouchableOpacity>
 

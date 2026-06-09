@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,57 +10,124 @@ import {
 import { useRouter } from "expo-router";
 import LugarModal from "../src/components/LugarModal";
 import ModalPerfil from "../src/components/ModalPerfil";
-import { lugares, Lugar } from "../src/constants/data";
+import { getLugares, Lugar } from "../src/api/lugares";
+import { imagens } from "../src/constants/imagens";
+import { Usuario, getUsuarioAtual } from "../src/api/usuarios";
 
 export default function Home() {
   const router = useRouter();
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalPerfilVisible, setModalPerfilVisible] = useState(false);
+const [modalVisible, setModalVisible] = useState(false);
+const [modalPerfilVisible, setModalPerfilVisible] = useState(false);
 
-  const [index, setIndex] = useState(0);
-  const [filtro, setFiltro] = useState<"recentes" | "procurados" | "avaliados">("recentes");
-  const [busca, setBusca] = useState("");
+const [lugares, setLugares] = useState<Lugar[]>([]);
+const [usuario, setUsuario] = useState<Usuario | null>(null);
+const [loading, setLoading] = useState(true);
 
-  const lugaresFiltradosBusca = busca
-    ? lugares.filter((l: Lugar) =>
-        l.nome.toLowerCase().includes(busca.toLowerCase())
-      )
-    : [];
+const [index, setIndex] = useState(0);
+const [filtro, setFiltro] = useState<
+  "recentes" | "procurados" | "avaliados"
+>("recentes");
+const [busca, setBusca] = useState("");
 
-  const lugaresFiltrados =
-    filtro === "avaliados"
-      ? [...lugares].sort((a, b) => b.rating - a.rating).slice(0, 4)
-      : filtro === "procurados"
-      ? [
-          lugares.find((l: Lugar) => l.id === 3),
-          lugares.find((l: Lugar) => l.id === 5),
-          lugares.find((l: Lugar) => l.id === 0),
-          lugares.find((l: Lugar) => l.id === 7),
-        ].filter((item): item is Lugar => item !== undefined)
-      : lugares;
+useEffect(() => {
+  carregarLugares();
+  carregarUsuario();
+}, []);
 
-  const lugarAtual = lugaresFiltrados[index];
+async function carregarUsuario() {
+  try {
+    const dados = await getUsuarioAtual();
 
-  function mudarFiltro(novoFiltro: "recentes" | "procurados" | "avaliados") {
-    setFiltro(novoFiltro);
-    setIndex(0);
+    if (dados) {
+      setUsuario(dados);
+    }
+  } catch (error) {
+    console.error(error);
   }
+}
 
-  function proximaImagem() {
-    setIndex((prev) => (prev + 1) % lugaresFiltrados.length);
+async function carregarLugares() {
+  try {
+    const dados = await getLugares();
+    setLugares(dados);
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao carregar lugares");
+  } finally {
+    setLoading(false);
   }
+}
 
-  function imagemAnterior() {
-    setIndex((prev) => (prev - 1 + lugaresFiltrados.length) % lugaresFiltrados.length);
-  }
+const lugaresFiltradosBusca = busca
+  ? lugares.filter((l) =>
+      l.nome.toLowerCase().includes(busca.toLowerCase())
+    )
+  : [];
+
+const lugaresFiltrados =
+  filtro === "avaliados"
+    ? [...lugares]
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 4)
+    : filtro === "procurados"
+    ? [
+        lugares.find((l) => l.id === "4"),
+        lugares.find((l) => l.id === "6"),
+        lugares.find((l) => l.id === "1"),
+        lugares.find((l) => l.id === "8"),
+      ].filter((item): item is Lugar => item !== undefined)
+    : lugares;
+
+const lugarAtual = lugaresFiltrados[index];
+
+function mudarFiltro(
+  novoFiltro: "recentes" | "procurados" | "avaliados"
+) {
+  setFiltro(novoFiltro);
+  setIndex(0);
+}
+
+function proximaImagem() {
+  if (lugaresFiltrados.length === 0) return;
+
+  setIndex(
+    (prev) => (prev + 1) % lugaresFiltrados.length
+  );
+}
+
+function imagemAnterior() {
+  if (lugaresFiltrados.length === 0) return;
+
+  setIndex(
+    (prev) =>
+      (prev - 1 + lugaresFiltrados.length) %
+      lugaresFiltrados.length
+  );
+}
+
+if (loading) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text>Carregando...</Text>
+    </View>
+  );
+}
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Olá, Arthur</Text>
+            <Text style={styles.title}>
+              Olá, {usuario?.nome || "Visitante"}
+            </Text>
             <Text style={styles.subtitle}>Explore o mundo.</Text>
           </View>
 
@@ -89,7 +156,7 @@ export default function Home() {
                     setBusca(item.nome);
                     router.push({
                       pathname: "/LugarInfo",
-                      params: { id: item.id },
+                      params: { id: String(item.id) },
                     });
                   }}
                 >
@@ -114,9 +181,10 @@ export default function Home() {
         />
 
         <ModalPerfil
-          visible={modalPerfilVisible}
-          onClose={() => setModalPerfilVisible(false)}
-        />
+            visible={modalPerfilVisible}
+            onClose={() => setModalPerfilVisible(false)}
+            usuario={usuario}
+          />
 
         <View style={styles.filters}>
           <TouchableOpacity
@@ -153,11 +221,18 @@ export default function Home() {
             if (!lugarAtual) return;
             router.push({
               pathname: "/LugarInfo",
-              params: { id: lugarAtual.id },
+              params: { id: String(lugarAtual.id) },
             });
           }}
         >
-          <Image source={lugarAtual?.imagem} style={styles.image} />
+          <Image
+              source={
+                lugarAtual
+                  ? imagens[lugarAtual.nome as keyof typeof imagens]
+                  : require("../assets/images/chile.png")
+              }
+              style={styles.image}
+            />
 
           <TouchableOpacity style={styles.leftBtn} onPress={imagemAnterior}>
             <Text style={styles.arrow}>{"<"}</Text>

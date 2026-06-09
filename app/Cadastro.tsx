@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { criarUsuario } from "../src/api/usuarios";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -104,41 +105,57 @@ export default function Cadastro() {
     return data > hoje;
   }
 
-  function handleCadastro() {
-    if (!nome || !email || !cpf || !senha || !dia || !mes || !ano) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-
-    const cpfNumeros = cpf.replace(/\D/g, "");
-    if (cpfNumeros.length !== 11) {
-      alert("CPF deve conter 11 números!");
-      return;
-    }
-
-    const d = parseInt(dia);
-    const m = parseInt(mes);
-    const a = parseInt(ano);
-
-    if (m < 1 || m > 12) {
-      alert("Mês inválido!");
-      return;
-    }
-
-    const maxDias = diasNoMes(m, a);
-
-    if (d < 1 || d > maxDias) {
-      alert("Dia inválido para esse mês!");
-      return;
-    }
-
-    if (dataFutura(d, m, a)) {
-      alert("Data não pode ser no futuro!");
-      return;
-    }
-
-    router.push("/TelaPrincipal");
+ async function handleCadastro() {
+  if (!nome || !email || !cpf || !senha || !dia || !mes || !ano) {
+    alert("Preencha todos os campos!");
+    return;
   }
+
+  const cpfNumeros = cpf.replace(/\D/g, "");
+
+  if (cpfNumeros.length !== 11) {
+    alert("CPF deve conter 11 números!");
+    return;
+  }
+
+  const d = parseInt(dia);
+  const m = parseInt(mes);
+  const a = parseInt(ano);
+
+  if (m < 1 || m > 12) {
+    alert("Mês inválido!");
+    return;
+  }
+
+  const maxDias = diasNoMes(m, a);
+
+  if (d < 1 || d > maxDias) {
+    alert("Dia inválido para esse mês!");
+    return;
+  }
+
+  if (dataFutura(d, m, a)) {
+    alert("Data não pode ser no futuro!");
+    return;
+  }
+
+  try {
+    await criarUsuario({
+      nome,
+      email,
+      senha,
+      cpf,
+      dataNascimento: `${dia}/${mes}/${ano}`,
+    });
+
+    alert("Cadastro realizado com sucesso!");
+
+    router.push("/TelaLogin");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao cadastrar usuário!");
+  }
+}
 
   return (
     <ImageBackground

@@ -6,14 +6,10 @@ import {
   Modal,
   TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router";
 
 export default function ModalConfirm({ visible, onClose }: any) {
-  const router = useRouter();
-
   function handleClose() {
     onClose();
-    router.replace("/TelaPrincipal");
   }
 
   return (

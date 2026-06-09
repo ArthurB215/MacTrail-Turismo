@@ -8,20 +8,39 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { getUsuarios } from "../api/usuarios";
 
 export default function ForgotModal({ visible, onClose }: any) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
+  const router = useRouter();
 
-  function handleEnviar() {
+  async function handleEnviar() {
     if (!email) {
       alert("Digite seu email!");
       return;
     }
 
-    alert("Email de redefinição enviado!");
-    setEmail("");
-    onClose();
+    try {
+      const usuarios = await getUsuarios();
+
+      const existe = usuarios.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
+
+      if (!existe) {
+        alert("Email não encontrado!");
+        return;
+      }
+
+      alert("Email de redefinição enviado!");
+
+      setEmail("");
+      onClose();
+
+      router.push("/Forgot");
+    } catch (error) {
+      alert("Erro ao verificar email!");
+    }
   }
 
   function handleClose() {
@@ -50,6 +69,7 @@ export default function ForgotModal({ visible, onClose }: any) {
           <Text style={styles.modalTitle}>Redefinir senha</Text>
 
           <Text style={styles.label}>Email</Text>
+
           <TextInput
             style={styles.input}
             placeholder="Digite seu email"

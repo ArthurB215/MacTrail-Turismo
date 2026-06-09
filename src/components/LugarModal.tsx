@@ -10,8 +10,13 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { imagens } from "../constants/imagens";
 
-export default function LugarModal({ visible, onClose, lugares }: any) {
+export default function LugarModal({
+  visible,
+  onClose,
+  lugares,
+}: any) {
   const router = useRouter();
   const [modoLista, setModoLista] = useState(true);
 
@@ -21,16 +26,20 @@ export default function LugarModal({ visible, onClose, lugares }: any) {
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Lugares Disponíveis</Text>
+              <Text style={styles.modalTitle}>
+                Lugares Disponíveis
+              </Text>
 
               <FlatList
                 data={lugares}
                 key={modoLista ? "lista" : "grid"}
-                keyExtractor={(item: any) => item.id.toString()}
+                keyExtractor={(item: any) => item.id}
                 showsVerticalScrollIndicator={false}
                 numColumns={modoLista ? 1 : 2}
                 columnWrapperStyle={
-                  !modoLista ? { justifyContent: "space-between" } : undefined
+                  !modoLista
+                    ? { justifyContent: "space-between" }
+                    : undefined
                 }
                 contentContainerStyle={{ paddingBottom: 10 }}
                 renderItem={({ item }: any) =>
@@ -39,16 +48,27 @@ export default function LugarModal({ visible, onClose, lugares }: any) {
                       style={styles.item}
                       onPress={() => {
                         onClose();
+
                         router.push({
                           pathname: "/LugarInfo",
-                          params: { id: item.id },
+                          params: { id: String(item.id) },
                         });
                       }}
                     >
-                      <Image source={item.imagem} style={styles.image} />
+                      <Image
+                        source={
+                          imagens[
+                            item.nome as keyof typeof imagens
+                          ]
+                        }
+                        style={styles.image}
+                      />
 
                       <View style={styles.info}>
-                        <Text style={styles.nome}>{item.nome}</Text>
+                        <Text style={styles.nome}>
+                          {item.nome}
+                        </Text>
+
                         <Text style={styles.sub}>
                           {item.pais} ⭐ {item.rating}
                         </Text>
@@ -59,14 +79,25 @@ export default function LugarModal({ visible, onClose, lugares }: any) {
                       style={styles.gridItem}
                       onPress={() => {
                         onClose();
+
                         router.push({
                           pathname: "/LugarInfo",
-                          params: { id: item.id },
+                          params: { id: String(item.id) },
                         });
                       }}
                     >
-                      <Image source={item.imagem} style={styles.gridImage} />
-                      <Text style={styles.gridText}>{item.nome}</Text>
+                      <Image
+                        source={
+                          imagens[
+                            item.nome as keyof typeof imagens
+                          ]
+                        }
+                        style={styles.gridImage}
+                      />
+
+                      <Text style={styles.gridText}>
+                        {item.nome}
+                      </Text>
                     </TouchableOpacity>
                   )
                 }
@@ -82,8 +113,13 @@ export default function LugarModal({ visible, onClose, lugares }: any) {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                  <Text style={styles.closeText}>Fechar</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={onClose}
+                >
+                  <Text style={styles.closeText}>
+                    Fechar
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

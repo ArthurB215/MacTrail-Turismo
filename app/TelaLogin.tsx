@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import ForgotModal from "../src/components/ModalEmail";
-import { usuario } from "../src/constants/user";
+import { getUsuarios } from "../src/api/usuarios";
+import { setUsuarioLogado } from "../src/api/usuarioLogado";
 
 export default function Home() {
   const router = useRouter();
@@ -18,16 +19,28 @@ export default function Home() {
   const [senha, setSenha] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
-  function handleLogin() {
+  async function handleLogin() {
     if (!email || !senha) {
       alert("Preencha todos os campos!");
       return;
     }
 
-    if (email === usuario.email && senha === usuario.senha) {
-      router.push("/TelaPrincipal");
-    } else {
-      alert("Email ou senha inválidos!");
+    try {
+      const usuarios = await getUsuarios();
+
+      const usuario = usuarios.find(
+        (u) => u.email === email && u.senha === senha
+      );
+
+      if (usuario) {
+        setUsuarioLogado(usuario.email);
+        router.replace("/TelaPrincipal");
+      } else {
+        alert("Email ou senha inválidos!");
+      }
+    } catch (error) {
+      alert("Erro ao conectar com a API!");
+      console.error(error);
     }
   }
 
@@ -39,11 +52,13 @@ export default function Home() {
     >
       <View style={styles.container}>
         <Text style={styles.title}>Faça login na sua conta.</Text>
+
         <Text style={styles.subtitle}>
           Insira seu e-mail e senha para fazer login.
         </Text>
 
         <Text style={styles.label}>Email</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Digite seu email"
@@ -53,6 +68,7 @@ export default function Home() {
         />
 
         <Text style={styles.label}>Senha</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Digite sua senha"
@@ -71,13 +87,13 @@ export default function Home() {
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Conectar</Text>
           </TouchableOpacity>
-
         </View>
 
         <Text style={styles.or}>────────────── OU ──────────────</Text>
 
         <View style={styles.signupRow}>
           <Text style={styles.signupText}>Não possui conta?</Text>
+
           <TouchableOpacity onPress={() => router.push("/Cadastro")}>
             <Text style={styles.signupLink}> Cadastrar-se</Text>
           </TouchableOpacity>
@@ -96,7 +112,6 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
-
   container: {
     flex: 1,
     justifyContent: "center",
@@ -105,24 +120,20 @@ const styles = StyleSheet.create({
     marginTop: 50,
     padding: 30,
   },
-
   title: {
     fontSize: 30,
     fontWeight: "bold",
   },
-
   subtitle: {
     color: "#000000",
     marginBottom: 20,
   },
-
   label: {
     marginTop: 10,
     marginBottom: 5,
     color: "#000000",
     marginLeft: 50,
   },
-
   input: {
     backgroundColor: "#eee",
     padding: 12,
@@ -130,21 +141,18 @@ const styles = StyleSheet.create({
     width: 350,
     marginLeft: 50,
   },
-
   forgot: {
     textAlign: "right",
     color: "#1e90ff",
     marginTop: 5,
     marginRight: 45,
   },
-
   buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
     marginTop: 20,
   },
-
   button: {
     backgroundColor: "#1e90ff",
     padding: 10,
@@ -152,29 +160,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 350,
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-
   or: {
     textAlign: "center",
     marginVertical: 15,
     color: "#888",
   },
-
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 10,
   },
-
   signupText: {
     color: "#000",
   },
-  
   signupLink: {
     color: "#1e90ff",
     fontWeight: "bold",

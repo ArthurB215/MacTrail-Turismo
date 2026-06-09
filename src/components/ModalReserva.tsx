@@ -2,25 +2,23 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
+  StyleSheet,
   TouchableOpacity,
   TextInput,
 } from "react-native";
 import ModalConfirm from "./ModalConfirm";
+import { salvarReserva, getReservasPorUsuario } from "../database/database";
+import { getUsuarioLogado } from "../api/usuarioLogado";
 
 export default function ReservaModal({ visible, onClose, lugar }: any) {
   const [dia, setDia] = useState("");
   const [mes, setMes] = useState("");
-
   const [diaChegada, setDiaChegada] = useState("");
   const [mesChegada, setMesChegada] = useState("");
-
   const [horaSaida, setHoraSaida] = useState("");
   const [horaChegada, setHoraChegada] = useState("");
   const [pessoas, setPessoas] = useState("");
-  const [email, setEmail] = useState("");
-
   const [mesmoDia, setMesmoDia] = useState(false);
   const [modalConfirm, setModalConfirm] = useState(false);
 
@@ -73,19 +71,7 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
       num = num.slice(0, 2) + ":" + num.slice(2);
     }
 
-    let [h, m] = num.split(":");
-
-    if (h) {
-      let hora = parseInt(h);
-      if (!isNaN(hora) && hora > 23) h = "23";
-    }
-
-    if (m) {
-      let min = parseInt(m);
-      if (!isNaN(min) && min > 59) m = "59";
-    }
-
-    return m !== undefined ? `${h}:${m}` : h;
+    return num;
   }
 
   function completarHora(hora: string) {
@@ -93,9 +79,7 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
 
     let [h, m] = hora.split(":");
 
-    if (m && m.length === 1) {
-      m = m + "0";
-    }
+    if (m && m.length === 1) m = m + "0";
 
     return `${h}:${m}`;
   }
@@ -123,8 +107,11 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
     return h * 60 + m;
   }
 
-  function handleReserva() {
-    if (!dia || !mes || !horaSaida || !horaChegada || !pessoas || !email) {
+  async function handleReserva() {
+    const email = getUsuarioLogado();
+    if (!email) return;
+
+    if (!dia || !mes || !horaSaida || !horaChegada || !pessoas) {
       alert("Preencha todos os campos!");
       return;
     }
@@ -162,14 +149,32 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
 
     const mesmaData = mesmoDia || (d1 === d2 && m1 === m2);
 
-    if (mesmaData) {
-      if (chegada <= saida) {
-        alert("Horário de chegada inválido!");
-        return;
-      }
+    if (mesmaData && chegada <= saida) {
+      alert("Horário de chegada inválido!");
+      return;
     }
 
-    setModalConfirm(true);
+    try {
+      await salvarReserva({
+        userEmail: email,
+        lugar: lugar.nome,
+        diaSaida: dia,
+        mesSaida: mes,
+        diaChegada: mesmoDia ? dia : diaChegada,
+        mesChegada: mesmoDia ? mes : mesChegada,
+        horaSaida,
+        horaChegada,
+        pessoas,
+      });
+
+      const reservas = await getReservasPorUsuario(email);
+      console.log(reservas);
+
+      setModalConfirm(true);
+    } catch (error) {
+      console.log(error);
+      alert("Erro ao salvar reserva!");
+    }
   }
 
   function toggleMesmoDia() {
@@ -265,14 +270,6 @@ export default function ReservaModal({ visible, onClose, lugar }: any) {
               value={pessoas}
               onChangeText={setPessoas}
               keyboardType="numeric"
-            />
-
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Digite seu email"
-              value={email}
-              onChangeText={setEmail}
             />
 
             <TouchableOpacity style={styles.button} onPress={handleReserva}>
